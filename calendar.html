@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RFP Deadline Calendar — Quiq Labs</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:#f7f8fa; color:#1a1d24; line-height:1.5; }
+  .wrap { max-width:1300px; margin:0 auto; padding:24px; }
+  header { margin-bottom:20px; padding-bottom:14px; border-bottom:2px solid #e3e6eb; }
+  h1 { font-size:26px; margin:0 0 4px; color:#0a0e17; }
+  .subtitle { color:#5a6675; font-size:13px; margin:0; }
+  .nav { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+  .nav a { color:#2563eb; text-decoration:none; font-size:12px; padding:5px 11px; border:1px solid #d0d5dd; border-radius:6px; background:#fff; }
+  .nav a:hover { background:#f2f4f7; }
+  .legend { display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:11px; color:#5a6675; margin:14px 0; }
+  .legend .score { display:inline-block; min-width:26px; padding:2px 6px; border-radius:10px; font-weight:700; color:#fff; font-size:11px; text-align:center; }
+  .month-block { background:#fff; border:1px solid #e3e6eb; border-radius:10px; padding:18px; margin-bottom:20px; }
+  .month-block h2 { margin:0 0 14px; font-size:18px; color:#0a0e17; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cal-day-head { background:#f2f4f7; padding:8px 6px; text-align:center; font-size:11px; font-weight:600; color:#6b7684; text-transform:uppercase; letter-spacing:0.4px; border-radius:4px; }
+  .cal-day { background:#fafbfc; border:1px solid #e3e6eb; border-radius:6px; min-height:96px; padding:6px 6px 4px; position:relative; }
+  .cal-day.empty { background:#f7f8fa; }
+  .cal-day.today { background:#fff7e6; border-color:#d97706; box-shadow:0 0 0 1px #d97706; }
+  .cal-day .num { font-size:12px; font-weight:600; color:#1a1d24; }
+  .cal-day .num.today { color:#d97706; }
+  .cal-day .num.weekend { color:#a4adbd; }
+  .cal-pill { display:block; font-size:10px; padding:2px 4px; border-radius:3px; margin-top:3px; color:#fff; font-weight:600; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-decoration:none; }
+  .cal-more { font-size:10px; color:#6b7684; margin-top:2px; cursor:pointer; }
+  .agenda { background:#fff; border:1px solid #e3e6eb; border-radius:10px; padding:18px; margin-bottom:20px; }
+  .agenda h2 { margin:0 0 12px; font-size:18px; color:#0a0e17; }
+  .agenda .item { padding:10px 0; border-top:1px dashed #e3e6eb; }
+  .agenda .item:first-of-type { border-top:none; padding-top:4px; }
+  .agenda .item-row { display:flex; align-items:flex-start; gap:10px; }
+  .agenda .item-date { font-weight:700; font-size:13px; color:#0a0e17; min-width:110px; }
+  .agenda .item-score { display:inline-block; min-width:24px; padding:2px 6px; border-radius:10px; font-size:10.5px; font-weight:700; color:#fff; text-align:center; margin-right:4px; }
+  .agenda .item-title { font-size:13px; color:#0a0e17; font-weight:500; }
+  .agenda .item-agency { font-size:11.5px; color:#6b7684; margin-top:2px; }
+  .agenda a.item-link { color:#2563eb; text-decoration:none; font-size:11px; margin-left:8px; }
+  .agenda a.item-link:hover { text-decoration:underline; }
+  details.day-pop { margin-top:6px; }
+  details.day-pop summary { font-size:10px; color:#2563eb; cursor:pointer; }
+  details.day-pop .day-pop-list { font-size:11px; padding:6px 4px 2px; color:#1a1d24; }
+  details.day-pop .day-pop-list a { color:#2563eb; text-decoration:none; display:block; padding:2px 0; }
+  details.day-pop .day-pop-list a:hover { text-decoration:underline; }
+  footer { text-align:center; color:#8a93a0; font-size:11px; margin-top:24px; padding-top:14px; border-top:1px solid #e3e6eb; }
+  .topbar-stat { display:inline-block; margin-right:18px; font-size:13px; color:#5a6675; }
+  .topbar-stat b { color:#0a0e17; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>RFP Deadline Calendar</h1>
+  <p class="subtitle">All RFPs with concrete due dates · color-coded by Quiq Labs fit score</p>
+  <div class="nav">
+    <a href="sjv_rfp_dashboard.html">← Dashboard</a>
+    <a href="quiq_labs_services.html">Services</a>
+    <a href="sources.html">All Sources</a>
+    
+  </div>
+</header>
+<p><span class="topbar-stat">Dated RFPs: <b>121</b></span><span class="topbar-stat">High-fit (≥7): <b>23</b></span><span class="topbar-stat">Months tracked: <b>6</b></span></p>
+<div class="legend"><span class="score" style="background:#16a34a;color:#fff;">9-10</span><span class="score" style="background:#65a30d;color:#fff;">7-8</span><span class="score" style="background:#d97706;color:#fff;">5-6</span><span class="score" style="background:#dc2626;color:#fff;">3-4</span><span class="score" style="background:#991b1b;color:#fff;">1-2</span><span class="score" style="background:#6b7280;color:#fff;">0</span> · Score legend (Quiq Labs fit)</div>
+<section class="agenda">
+<h2>📋 Next 60 days — high-fit picks (score ≥ 7)</h2>
+<div class="item"><div class="item-row"><div class="item-date">🚨 TODAY</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">Task Order Contract for Web Hosting and Digital Media Services</span><a class="item-link" href="https://vendors.planetbids.com/portal/21372/bo/bo-search" target="_blank">Open ↗</a><div class="item-agency">Los Angeles Community College District</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">🚨 TODAY</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Website Hosting and Digital Media Services</span><a class="item-link" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Fri May 29 (2d)</div><div><span class="item-score" style="background:#65a30d;color:#fff;">7</span><span class="item-title">SharePoint Online Intranet Hub Development Services</span><a class="item-link" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Sat May 30 (3d)</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Graphic and Digital Design for DCA Publications</span><a class="item-link" href="https://www.rampla.org/s/opportunity-details?id=006Ql00000aIqGCIA0" target="_blank">Open ↗</a><div class="item-agency">City of Los Angeles, Department of Cultural Affairs</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Mon Jun 01 (5d)</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Website User Experience (UX) and Content Strategy Services</span><a class="item-link" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Tue Jun 02 (6d)</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Website Redesign, Implementation and Migration Services Using Drupal CMS</span><a class="item-link" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Tue Jun 02 (6d)</div><div><span class="item-score" style="background:#65a30d;color:#fff;">7</span><span class="item-title">SharePoint Redesign Services</span><a class="item-link" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Wed Jun 03 (7d)</div><div><span class="item-score" style="background:#65a30d;color:#fff;">7</span><span class="item-title">RFI - Citation Processing System Replacement</span><a class="item-link" href="https://sfcitypartner.sfgov.org/pages/Events-BS3/event-search.aspx" target="_blank">Open ↗</a><div class="item-agency">San Francisco Municipal Transportation Agency</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Thu Jun 04</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Website Design, Development, Hosting and Acquia Migration Service Using Drupal CMS</span><a class="item-link" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Fri Jun 05</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Community Based Child Abuse Prevention Awareness Campaign</span><a class="item-link" href="https://gsa.acgov.org/do-business-with-us/contracting-opportunities/" target="_blank">Open ↗</a><div class="item-agency">County of Alameda (SSA / Children & Family Services)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Mon Jun 08</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Student Engagement Platform</span><a class="item-link" href="https://www.rfpmart.com/software-system-and-application-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California Education Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Mon Jun 08</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Adaptation Clearinghouse Modernization Services</span><a class="item-link" href="https://www.bidnetdirect.com/california" target="_blank">Open ↗</a><div class="item-agency">California State (per Sacramento posting on BidNet/RFPMart)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Fri Jun 12</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">Expanded Learning Opportunities Program (ELO-P) - Primary Program Provider Services</span><a class="item-link" href="https://vendors.planetbids.com/portal/23758/bo/bo-search" target="_blank">Open ↗</a><div class="item-agency">Long Beach Unified School District</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Tue Jun 16</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Learning Management System</span><a class="item-link" href="https://gsa.acgov.org/do-business-with-us/contracting-opportunities/" target="_blank">Open ↗</a><div class="item-agency">County of Alameda (HR / Org Development)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Tue Jun 16</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Public Board Meeting Solution RFP</span><a class="item-link" href="https://procurement.opengov.com/portal/smcgov" target="_blank">Open ↗</a><div class="item-agency">County of San Mateo</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Wed Jun 17</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">Website and Mobile Application Modernization and Operations Service</span><a class="item-link" href="https://www.rfpmart.com/mobile-application-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Wed Jun 17</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">Southern California 511 Web & Mobile App Modernization and Operations</span><a class="item-link" href="https://business.metro.net/webcenter/portal/VendorPortal/pages_home/solicitations/openSolicitations" target="_blank">Open ↗</a><div class="item-agency">LA Metro (LACMTA)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Wed Jun 17</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Strategic Marketing & Outreach Program — Promotor Incentive Program</span><a class="item-link" href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank">Open ↗</a><div class="item-agency">City of Sacramento</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Thu Jun 18</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">Expanded Learning Opportunities Program (ELO-P) - Supplemental Enrichment Programs</span><a class="item-link" href="https://vendors.planetbids.com/portal/23758/bo/bo-search" target="_blank">Open ↗</a><div class="item-agency">Long Beach Unified School District</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Fri Jun 19</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">California Career Technical Education Incentive Grant (CTEIG) 2026-27</span><a class="item-link" href="https://www.cde.ca.gov/fg/fo/r17/cteig26rfa.asp" target="_blank">Open ↗</a><div class="item-agency">California Department of Education</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Mon Jun 22</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Enterprise Software Initiative — Website Development Support Services Using CMS</span><a class="item-link" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Mon Jun 22</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Professional Communications and Media Coordination Services</span><a class="item-link" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank">Open ↗</a><div class="item-agency">California State Agency (per RFPMart listing)</div></div></div></div>
+</section>
+<section class="month-block">
+<h2>May 2026</h2>
+<div class="cal-grid">
+  <div class="cal-day-head">Sun</div>
+  <div class="cal-day-head">Mon</div>
+  <div class="cal-day-head">Tue</div>
+  <div class="cal-day-head">Wed</div>
+  <div class="cal-day-head">Thu</div>
+  <div class="cal-day-head">Fri</div>
+  <div class="cal-day-head">Sat</div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day"><div class="num">1</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">2</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">3</div>
+  </div>
+  <div class="cal-day"><div class="num">4</div>
+  </div>
+  <div class="cal-day"><div class="num">5</div>
+  </div>
+  <div class="cal-day"><div class="num">6</div>
+  </div>
+  <div class="cal-day"><div class="num">7</div>
+  </div>
+  <div class="cal-day"><div class="num">8</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">9</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">10</div>
+  </div>
+  <div class="cal-day"><div class="num">11</div>
+  </div>
+  <div class="cal-day"><div class="num">12</div>
+  </div>
+  <div class="cal-day"><div class="num">13</div>
+  </div>
+  <div class="cal-day"><div class="num">14</div>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://pfm.sbcounty.gov/projects-out-for-bid/" target="_blank" title="[0] SHR WVDC Roof Replacement (County of San Bernardino (Project & Facilities Mgmt))">0 · SHR WVDC Roof Replacemen…</a>
+  </div>
+  <div class="cal-day"><div class="num">15</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">16</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">17</div>
+  </div>
+  <div class="cal-day"><div class="num">18</div>
+  </div>
+  <div class="cal-day"><div class="num">19</div>
+  </div>
+  <div class="cal-day"><div class="num">20</div>
+  </div>
+  <div class="cal-day"><div class="num">21</div>
+  </div>
+  <div class="cal-day"><div class="num">22</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">23</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">24</div>
+  </div>
+  <div class="cal-day"><div class="num">25</div>
+  </div>
+  <div class="cal-day"><div class="num">26</div>
+  </div>
+  <div class="cal-day today"><div class="num today">27</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://vendors.planetbids.com/portal/21372/bo/bo-search" target="_blank" title="[10] Task Order Contract for Web Hosting and Digital Media Services (Los Angeles Community College District)">10 · Task Order Contract for …</a>
+    <a class="cal-pill" style="background:#65a30d;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[8] Website Hosting and Digital Media Services (California State Agency (per RFPMart listing))">8 · Website Hosting and Digi…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/48157/bo/bo-search" target="_blank" title="[0] Printed Business & Catalog Envelopes (County of El Dorado (Procurement & Contracts))">0 · Printed Business & Catal…</a>
+    <details class="day-pop"><summary>+5 more</summary><div class="day-pop-list">
+      <a href="https://business.metro.net/webcenter/portal/VendorPortal/pages_home/solicitations/openSolicitations" target="_blank">[0] TOC Economic Development Program Pilot Fund - Prog</a>
+      <a href="https://vendors.planetbids.com/portal/14599/bo/bo-search" target="_blank">[0] Laird Park Parking Lot</a>
+      <a href="https://vendors.planetbids.com/portal/64020/bo/bo-search" target="_blank">[0] Sheriff's Office Correctional Mattress</a>
+      <a href="https://bids.sciquest.com/apps/Router/PublicEvent?CustomerOrg=CalState" target="_blank">[0] Lot 1 Solar and Lot 3 Solar/Energy Storage Project</a>
+      <a href="https://vendors.planetbids.com/portal/61954/bo/bo-search" target="_blank">[0] Security Officer Services</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">28</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://sfcitypartner.sfgov.org/pages/Events-BS3/event-search.aspx" target="_blank" title="[1] As-Needed Historical Preservation Services 2026 (San Francisco Department of Public Works)">1 · As-Needed Historical Pre…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank" title="[0] Cove Park Shade Canopy (City of Sacramento (YPCE))">0 · Cove Park Shade Canopy</a>
+  </div>
+  <div class="cal-day"><div class="num">29</div>
+    <a class="cal-pill" style="background:#65a30d;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[7] SharePoint Online Intranet Hub Development Services (California State Agency (per RFPMart listing))">7 · SharePoint Online Intran…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[0] Community Outreach and Intervention Services (California Agency (per RFPMart listing))">0 · Community Outreach and I…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://mercedcounty.procureware.com/Bids" target="_blank" title="[0] Landscape Maintenance at Taylor Park and Harmony Ranch - Delhi (County of Merced (Purchasing))">0 · Landscape Maintenance at…</a>
+    <details class="day-pop"><summary>+2 more</summary><div class="day-pop-list">
+      <a href="https://www.mendocinocounty.gov/departments/general-services/central-services/open-rfp-quotes-bids" target="_blank">[0] County Counsel Services</a>
+      <a href="https://vendors.planetbids.com/portal/61954/bo/bo-search" target="_blank">[0] Telecommunication and Internet Transport Services</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num weekend">30</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rampla.org/s/opportunity-details?id=006Ql00000aIqGCIA0" target="_blank" title="[9] Graphic and Digital Design for DCA Publications (City of Los Angeles, Department of Cultural Affairs)">9 · Graphic and Digital Desi…</a>
+  </div>
+  <div class="cal-day"><div class="num weekend">31</div>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[0] Strategic Plan Development Service (California Agency (per RFPMart listing))">0 · Strategic Plan Developme…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://procurement.opengov.com/portal/tuolumnecountyca" target="_blank" title="[0] Westside Fuels Reduction (Tuolumne County)">0 · Westside Fuels Reduction</a>
+  </div>
+</div>
+</section>
+<section class="month-block">
+<h2>June 2026</h2>
+<div class="cal-grid">
+  <div class="cal-day-head">Sun</div>
+  <div class="cal-day-head">Mon</div>
+  <div class="cal-day-head">Tue</div>
+  <div class="cal-day-head">Wed</div>
+  <div class="cal-day-head">Thu</div>
+  <div class="cal-day-head">Fri</div>
+  <div class="cal-day-head">Sat</div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day"><div class="num">1</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[9] Website User Experience (UX) and Content Strategy Services (California State Agency (per RFPMart listing))">9 · Website User Experience …</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://sfcitypartner.sfgov.org/pages/Events-BS3/event-search.aspx" target="_blank" title="[1] Enterprise Resource Planning (San Francisco Controller's Office)">1 · Enterprise Resource Plan…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/23758/bo/bo-search" target="_blank" title="[0] ELO-P Packaged Meals Service (Long Beach Unified School District)">0 · ELO-P Packaged Meals Ser…</a>
+  </div>
+  <div class="cal-day"><div class="num">2</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[9] Website Redesign, Implementation and Migration Services Using Drupal CMS (California State Agency (per RFPMart listing))">9 · Website Redesign, Implem…</a>
+    <a class="cal-pill" style="background:#65a30d;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[7] SharePoint Redesign Services (California State Agency (per RFPMart listing))">7 · SharePoint Redesign Serv…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/64020/bo/bo-search" target="_blank" title="[0] Fiscal and Compliance Audit Services for SB 325 TDA Funds (Imperial County)">0 · Fiscal and Compliance Au…</a>
+    <details class="day-pop"><summary>+5 more</summary><div class="day-pop-list">
+      <a href="https://vendors.planetbids.com/portal/14769/bo/bo-search" target="_blank">[0] FAX Maintenance Building Steam Bay Renovation</a>
+      <a href="https://esupplier.sonomacounty.ca.gov/psc/FN92PRD/SUPPLIER/ERP/c/SCP_PUBLIC_MENU_FL.SCP_PUB_BID_CMP_FL.GBL" target="_blank">[0] Comprehensive Fee Study Consulting Services</a>
+      <a href="https://vendors.planetbids.com/portal/14769/bo/bo-search" target="_blank">[0] Cedar Ave at Fountain HAWK and Shields Traffic Sig</a>
+      <a href="https://procurement.opengov.com/portal/cosb" target="_blank">[0] Solid Waste Management Consulting Services</a>
+      <a href="https://vendors.planetbids.com/portal/43764/bo/bo-search" target="_blank">[0] Tree Trimming and Removal Services Districtwide</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">3</div>
+    <a class="cal-pill" style="background:#65a30d;color:#fff;" href="https://sfcitypartner.sfgov.org/pages/Events-BS3/event-search.aspx" target="_blank" title="[7] RFI - Citation Processing System Replacement (San Francisco Municipal Transportation Agency)">7 · RFI - Citation Processin…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.countyofkingsca.gov/departments/administration/purchasing/requests-for-proposals" target="_blank" title="[0] STI Prevention and Collaboration (County of Kings (Purchasing))">0 · STI Prevention and Colla…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/43764/bo/bo-search" target="_blank" title="[0] Hazardous Waste Removal Services Districtwide (San Diego Unified School District)">0 · Hazardous Waste Removal …</a>
+  </div>
+  <div class="cal-day"><div class="num">4</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[9] Website Design, Development, Hosting and Acquia Migration Service Using Drupal CMS (California State Agency (per RFPMart listing))">9 · Website Design, Developm…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/14599/bo/bo-search" target="_blank" title="[0] 2026 Chip Seal Project — Oil (County of Stanislaus (Public Works))">0 · 2026 Chip Seal Project —…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.beaconbid.com/solicitations/yolo-county/open" target="_blank" title="[0] Yolo County Airport Runway 16-34 Rehabilitation Project (County of Yolo)">0 · Yolo County Airport Runw…</a>
+  </div>
+  <div class="cal-day"><div class="num">5</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://gsa.acgov.org/do-business-with-us/contracting-opportunities/" target="_blank" title="[9] Community Based Child Abuse Prevention Awareness Campaign (County of Alameda (SSA / Children & Family Services))">9 · Community Based Child Ab…</a>
+    <a class="cal-pill" style="background:#d97706;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[6] ADA Accessibility Compliance Assessment and Transition Plan Consulting (City of La Quinta)">6 · ADA Accessibility Compli…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank" title="[1] 28th and B Skate Park Operations (City of Sacramento (YPCE))">1 · 28th and B Skate Park Op…</a>
+    <details class="day-pop"><summary>+3 more</summary><div class="day-pop-list">
+      <a href="https://ventura.courts.ca.gov/general-information/procurement" target="_blank">[1] Microsoft Licensing Reseller/Partner Services</a>
+      <a href="https://mercedcounty.procureware.com/Bids" target="_blank">[0] Countywide Security Guard Services</a>
+      <a href="https://cnusdk12.bonfirehub.com/portal/?tab=openOpportunities" target="_blank">[0] Paint and Paint Supplies</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num weekend">6</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">7</div>
+  </div>
+  <div class="cal-day"><div class="num">8</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rfpmart.com/software-system-and-application-rfp-government-contract.html" target="_blank" title="[9] Student Engagement Platform (California Education Agency (per RFPMart listing))">9 · Student Engagement Platf…</a>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.bidnetdirect.com/california" target="_blank" title="[9] Adaptation Clearinghouse Modernization Services (California State (per Sacramento posting on BidNet/RFPMart))">9 · Adaptation Clearinghouse…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/14599/bo/bo-search" target="_blank" title="[0] Environmental Consulting Services (County of Stanislaus)">0 · Environmental Consulting…</a>
+    <details class="day-pop"><summary>+4 more</summary><div class="day-pop-list">
+      <a href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank">[0] Aggie Square Workforce Program Case Management and</a>
+      <a href="https://www.countyofkingsca.gov/departments/administration/purchasing/requests-for-proposals" target="_blank">[0] Janitorial Services for KCDCSS</a>
+      <a href="https://bids.sciquest.com/apps/Router/PublicEvent?CustomerOrg=CalState" target="_blank">[0] TOCA Master Enabling Agreement RFQUAL</a>
+      <a href="https://cnusdk12.bonfirehub.com/portal/?tab=openOpportunities" target="_blank">[0] Tree Maintenance Services</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">9</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank" title="[1] Old Sacramento Boardwalk Replacement (City of Sacramento)">1 · Old Sacramento Boardwalk…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://humboldtgov.org/Bids.aspx" target="_blank" title="[1] Edgelines on Indian Reservation Road Systems (County of Humboldt (Public Works))">1 · Edgelines on Indian Rese…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://vendors.planetbids.com/portal/43764/bo/bo-search" target="_blank" title="[1] Furniture, Fixtures, and Equipment at Bird Rock Elementary (San Diego Unified School District)">1 · Furniture, Fixtures, and…</a>
+    <details class="day-pop"><summary>+1 more</summary><div class="day-pop-list">
+      <a href="https://vendors.planetbids.com/portal/54016/bo/bo-search" target="_blank">[0] Schnoor Ave Sidewalk Construction</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">10</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank" title="[1] Vision Zero School Safety Project (City of Sacramento (Public Works))">1 · Vision Zero School Safet…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://vendors.planetbids.com/portal/39475/bo/bo-search" target="_blank" title="[1] Citywide Drinking Water (City of Riverside)">1 · Citywide Drinking Water</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://www.rampla.org/s/opportunity-details?id=006Ql00000aaaUEIAY" target="_blank" title="[1] Halldale Elementary School - ADA Barrier Removal (Los Angeles Unified School District)">1 · Halldale Elementary Scho…</a>
+    <details class="day-pop"><summary>+2 more</summary><div class="day-pop-list">
+      <a href="https://esupplier.sonomacounty.ca.gov/psc/FN92PRD/SUPPLIER/ERP/c/SCP_PUBLIC_MENU_FL.SCP_PUB_BID_CMP_FL.GBL" target="_blank">[0] Probation IST/SMI Reentry and Housing Support</a>
+      <a href="https://bids.sciquest.com/apps/Router/PublicEvent?CustomerOrg=CalState" target="_blank">[0] CSULB Elevator Maintenance</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">11</div>
+    <a class="cal-pill" style="background:#dc2626;color:#fff;" href="https://business.metro.net/webcenter/portal/VendorPortal/pages_home/solicitations/openSolicitations" target="_blank" title="[3] Managed Security Operations Center (MSOC) Service Provider (LA Metro (LACMTA))">3 · Managed Security Operati…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/51469/bo/bo-search" target="_blank" title="[0] FCC OAB Chiller (State Center Community College District)">0 · FCC OAB Chiller</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/51469/bo/bo-search" target="_blank" title="[0] DW Lighting Upgrades, Multiple Sites (State Center Community College District)">0 · DW Lighting Upgrades, Mu…</a>
+  </div>
+  <div class="cal-day"><div class="num">12</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://vendors.planetbids.com/portal/23758/bo/bo-search" target="_blank" title="[10] Expanded Learning Opportunities Program (ELO-P) - Primary Program Provider Services (Long Beach Unified School District)">10 · Expanded Learning Opport…</a>
+    <a class="cal-pill" style="background:#d97706;color:#fff;" href="https://vendors.planetbids.com/portal/22949/bo/bo-search" target="_blank" title="[5] ADA Transition Plan Update (City of Salinas)">5 · ADA Transition Plan Upda…</a>
+    <a class="cal-pill" style="background:#dc2626;color:#fff;" href="https://www.cde.ca.gov/fg/fo/af/" target="_blank" title="[4] Tobacco-Use Prevention Education: County Technical Assistance (2026-27) (California Department of Education)">4 · Tobacco-Use Prevention E…</a>
+    <details class="day-pop"><summary>+6 more</summary><div class="day-pop-list">
+      <a href="https://www.mendocinocounty.gov/departments/general-services/central-services/open-rfp-quotes-bids" target="_blank">[1] Project Management Services - Wildfire Community R</a>
+      <a href="https://vendors.planetbids.com/portal/14742/bo/bo-search" target="_blank">[1] Surface Water Treatment Plant Clear Well Expansion</a>
+      <a href="https://vendors.planetbids.com/portal/51469/bo/bo-search" target="_blank">[0] Fire Alarm Upgrades, FCC & RC</a>
+      <a href="https://esupplier.sonomacounty.ca.gov/psc/FN92PRD/SUPPLIER/ERP/c/SCP_PUBLIC_MENU_FL.SCP_PUB_BID_CMP_FL.GBL" target="_blank">[0] Classification & Compensation Consulting Services</a>
+      <a href="https://ocde.us/Administrative/Pages/Bids-and-RFP's.aspx" target="_blank">[0] Geotechnical Soil Inspection — Rancho Sonado Fire </a>
+      <a href="https://ocde.us/Administrative/Pages/Bids-and-RFP's.aspx" target="_blank">[0] DSA Inspector of Record — Rancho Sonado Fire Resto</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num weekend">13</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">14</div>
+  </div>
+  <div class="cal-day"><div class="num">15</div>
+    <a class="cal-pill" style="background:#d97706;color:#fff;" href="https://business.metro.net/webcenter/portal/VendorPortal/pages_home/solicitations/openSolicitations" target="_blank" title="[5] Multimodal Integrated Planning (MIP) Program Services On-Call Bench (LA Metro (LACMTA))">5 · Multimodal Integrated Pl…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://gsa.acgov.org/do-business-with-us/contracting-opportunities/" target="_blank" title="[1] Emergency Management Software Platform Services (County of Alameda)">1 · Emergency Management Sof…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/14769/bo/bo-search" target="_blank" title="[0] Senior Affordable, Modular, Factory-Built Housing Development (City of Fresno (Development & Resource Mgmt))">0 · Senior Affordable, Modul…</a>
+    <details class="day-pop"><summary>+5 more</summary><div class="day-pop-list">
+      <a href="https://vendors.planetbids.com/portal/17950/bo/bo-search" target="_blank">[0] Automated License Plate Reader (ALPR) Program</a>
+      <a href="https://vendors.planetbids.com/portal/17950/bo/bo-search" target="_blank">[0] Citywide Video Camera Program</a>
+      <a href="https://mercedcounty.procureware.com/Bids" target="_blank">[0] Landscape Maintenance at La Paloma Recreational Pa</a>
+      <a href="https://procurement.opengov.com/portal/smcgov" target="_blank">[0] Reimbursement Consulting Support Services</a>
+      <a href="https://procurement.opengov.com/portal/cosb" target="_blank">[0] Election Printing and Mailing Services</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">16</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://gsa.acgov.org/do-business-with-us/contracting-opportunities/" target="_blank" title="[9] Learning Management System (County of Alameda (HR / Org Development))">9 · Learning Management Syst…</a>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://procurement.opengov.com/portal/smcgov" target="_blank" title="[9] Public Board Meeting Solution RFP (County of San Mateo)">9 · Public Board Meeting Sol…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://www.bidnetdirect.com/california/solicitations/open-bids/Enterprise-GPS-Fleet-Management-System/0000425383?purchasingGroupId=88020151&origin=2" target="_blank" title="[1] Enterprise GPS Fleet Management System (County of Tulare)">1 · Enterprise GPS Fleet Man…</a>
+    <details class="day-pop"><summary>+5 more</summary><div class="day-pop-list">
+      <a href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank">[0] Community-Based Doula Program Services</a>
+      <a href="https://vendors.planetbids.com/portal/14769/bo/bo-search" target="_blank">[0] Fresno Chandler Executive Airport Runway 12L-30R R</a>
+      <a href="https://vendors.planetbids.com/portal/14769/bo/bo-search" target="_blank">[0] RFP for Janitorial Services at FAX Facilities</a>
+      <a href="https://vendors.planetbids.com/portal/14769/bo/bo-search" target="_blank">[0] RFP RC for Medium and Low Voltage, Switchgear and </a>
+      <a href="https://vendors.planetbids.com/portal/54016/bo/bo-search" target="_blank">[0] Washington Schools Sidewalk Construction</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">17</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rfpmart.com/mobile-application-development-rfp-government-contract.html" target="_blank" title="[10] Website and Mobile Application Modernization and Operations Service (California State Agency (per RFPMart listing))">10 · Website and Mobile Appli…</a>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://business.metro.net/webcenter/portal/VendorPortal/pages_home/solicitations/openSolicitations" target="_blank" title="[10] Southern California 511 Web & Mobile App Modernization and Operations (LA Metro (LACMTA))">10 · Southern California 511 …</a>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank" title="[9] Strategic Marketing & Outreach Program — Promotor Incentive Program (City of Sacramento)">9 · Strategic Marketing & Ou…</a>
+  </div>
+  <div class="cal-day"><div class="num">18</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://vendors.planetbids.com/portal/23758/bo/bo-search" target="_blank" title="[10] Expanded Learning Opportunities Program (ELO-P) - Supplemental Enrichment Programs (Long Beach Unified School District)">10 · Expanded Learning Opport…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/15300/bo/bo-search" target="_blank" title="[0] Sacramento Marina Operational & Financial Sustainability Consulting (City of Sacramento)">0 · Sacramento Marina Operat…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/17950/bo/bo-search" target="_blank" title="[0] Citywide Merchant Card Processing (City of San Diego (Treasury))">0 · Citywide Merchant Card P…</a>
+    <details class="day-pop"><summary>+2 more</summary><div class="day-pop-list">
+      <a href="https://gsa.acgov.org/do-business-with-us/contracting-opportunities/" target="_blank">[0] Community Health Improvement (CHIP) Implementation</a>
+      <a href="https://www.rampla.org/s/opportunity-details?id=006Ql00000f6LuzIAE" target="_blank">[0] Propane Gas Refueling Stations Services (Re-bid)</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">19</div>
+    <a class="cal-pill" style="background:#65a30d;color:#fff;" href="https://www.cde.ca.gov/fg/fo/r17/cteig26rfa.asp" target="_blank" title="[8] California Career Technical Education Incentive Grant (CTEIG) 2026-27 (California Department of Education)">8 · California Career Techni…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://procurement.opengov.com/portal/smcgov" target="_blank" title="[1] Live Agent Services (County of San Mateo)">1 · Live Agent Services</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://procurement.opengov.com/portal/smcgov" target="_blank" title="[0] Sheriff's Office Towing, Recovery, Secure Storage & Non-Passenger Vehicle Disposal (County of San Mateo (Sheriff's Office))">0 · Sheriff's Office Towing,…</a>
+  </div>
+  <div class="cal-day"><div class="num weekend">20</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">21</div>
+  </div>
+  <div class="cal-day"><div class="num">22</div>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rfpmart.com/web-design-and-development-rfp-government-contract.html" target="_blank" title="[9] Enterprise Software Initiative — Website Development Support Services Using CMS (California State Agency (per RFPMart listing))">9 · Enterprise Software Init…</a>
+    <a class="cal-pill" style="background:#16a34a;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[9] Professional Communications and Media Coordination Services (California State Agency (per RFPMart listing))">9 · Professional Communicati…</a>
+  </div>
+  <div class="cal-day"><div class="num">23</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[1] Start Up, Implementation and Ongoing Management Service (City of Fontana)">1 · Start Up, Implementation…</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://vendors.planetbids.com/portal/39475/bo/bo-search" target="_blank" title="[1] La Sierra and Arlanza Libraries Carpet Installation (City of Riverside)">1 · La Sierra and Arlanza Li…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/48157/bo/bo-search" target="_blank" title="[0] As-Needed Professional Architectural, Engineering, and Construction Management Consulting Services (County of El Dorado)">0 · As-Needed Professional A…</a>
+  </div>
+  <div class="cal-day"><div class="num">24</div>
+    <a class="cal-pill" style="background:#d97706;color:#fff;" href="https://www.cde.ca.gov/fg/fo/af/" target="_blank" title="[5] 21st Century California School Leadership Academy, Cohort 3 (FY 2026-27) (California Department of Education)">5 · 21st Century California …</a>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://www.mendocinocounty.gov/departments/general-services/central-services/open-rfp-quotes-bids" target="_blank" title="[1] General Plan Resource Management Element (County of Mendocino)">1 · General Plan Resource Ma…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.rampla.org/s/opportunity-details?id=006Ql00000fHBYvIAO" target="_blank" title="[0] SAM Management (Software Asset Management) (Los Angeles Unified School District)">0 · SAM Management (Software…</a>
+    <details class="day-pop"><summary>+1 more</summary><div class="day-pop-list">
+      <a href="https://vendors.planetbids.com/portal/23758/bo/bo-search" target="_blank">[0] Polytechnic High School Improvements Project</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">25</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://vendors.planetbids.com/portal/26037/bo/bo-search" target="_blank" title="[1] McKee Fisk Anthropology Research Lab Retrofit Project (California State University, Fresno)">1 · McKee Fisk Anthropology …</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[0] Corporation Yard Master Plan (City of Visalia)">0 · Corporation Yard Master …</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[0] Theater Programming Services (City of Coronado)">0 · Theater Programming Serv…</a>
+    <details class="day-pop"><summary>+1 more</summary><div class="day-pop-list">
+      <a href="https://vendors.planetbids.com/portal/39501/bo/bo-search" target="_blank">[0] Security Services</a>
+    </div></details>
+  </div>
+  <div class="cal-day"><div class="num">26</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://www.rampla.org/s/opportunity-details?id=006Ql00000fGOtCIAW" target="_blank" title="[1] Audit and Data Analytics Software (LA Department of Water & Power)">1 · Audit and Data Analytics…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/14599/bo/bo-search" target="_blank" title="[0] Countywide Auditing Services (County of Stanislaus)">0 · Countywide Auditing Serv…</a>
+  </div>
+  <div class="cal-day"><div class="num weekend">27</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">28</div>
+  </div>
+  <div class="cal-day"><div class="num">29</div>
+  </div>
+  <div class="cal-day"><div class="num">30</div>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[0] As-Needed Consulting Services (California Agency (per RFPMart listing))">0 · As-Needed Consulting Ser…</a>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.rfpmart.com/marketing-and-branding-rfp-government-contract.html" target="_blank" title="[0] Farmers Market Management and Operations Services (California Agency (per RFPMart listing))">0 · Farmers Market Managemen…</a>
+  </div>
+</div>
+</section>
+<section class="month-block">
+<h2>July 2026</h2>
+<div class="cal-grid">
+  <div class="cal-day-head">Sun</div>
+  <div class="cal-day-head">Mon</div>
+  <div class="cal-day-head">Tue</div>
+  <div class="cal-day-head">Wed</div>
+  <div class="cal-day-head">Thu</div>
+  <div class="cal-day-head">Fri</div>
+  <div class="cal-day-head">Sat</div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day"><div class="num">1</div>
+  </div>
+  <div class="cal-day"><div class="num">2</div>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://www.beaconbid.com/solicitations/yolo-county/open" target="_blank" title="[0] Department of Community Services Public Works Division Grant Writer (County of Yolo (Community Services Public Works))">0 · Department of Community …</a>
+  </div>
+  <div class="cal-day"><div class="num">3</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">4</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">5</div>
+  </div>
+  <div class="cal-day"><div class="num">6</div>
+  </div>
+  <div class="cal-day"><div class="num">7</div>
+  </div>
+  <div class="cal-day"><div class="num">8</div>
+  </div>
+  <div class="cal-day"><div class="num">9</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://www.beaconbid.com/solicitations/yolo-county/open" target="_blank" title="[1] Smart Perimeter Odor Control System (County of Yolo)">1 · Smart Perimeter Odor Con…</a>
+  </div>
+  <div class="cal-day"><div class="num">10</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">11</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">12</div>
+  </div>
+  <div class="cal-day"><div class="num">13</div>
+  </div>
+  <div class="cal-day"><div class="num">14</div>
+  </div>
+  <div class="cal-day"><div class="num">15</div>
+  </div>
+  <div class="cal-day"><div class="num">16</div>
+  </div>
+  <div class="cal-day"><div class="num">17</div>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://vendors.planetbids.com/portal/14599/bo/bo-search" target="_blank" title="[0] Comprehensive Healthcare Services for Adult and Juvenile Detention Facilities (County of Stanislaus)">0 · Comprehensive Healthcare…</a>
+  </div>
+  <div class="cal-day"><div class="num weekend">18</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">19</div>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://humboldtgov.org/Bids.aspx" target="_blank" title="[0] Environmental Remediation and Restoration Initiative (County of Humboldt (Planning & Building))">0 · Environmental Remediatio…</a>
+  </div>
+  <div class="cal-day"><div class="num">20</div>
+  </div>
+  <div class="cal-day"><div class="num">21</div>
+  </div>
+  <div class="cal-day"><div class="num">22</div>
+  </div>
+  <div class="cal-day"><div class="num">23</div>
+  </div>
+  <div class="cal-day"><div class="num">24</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">25</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">26</div>
+  </div>
+  <div class="cal-day"><div class="num">27</div>
+  </div>
+  <div class="cal-day"><div class="num">28</div>
+  </div>
+  <div class="cal-day"><div class="num">29</div>
+  </div>
+  <div class="cal-day"><div class="num">30</div>
+  </div>
+  <div class="cal-day"><div class="num">31</div>
+  </div>
+</div>
+</section>
+<section class="month-block">
+<h2>December 2026</h2>
+<div class="cal-grid">
+  <div class="cal-day-head">Sun</div>
+  <div class="cal-day-head">Mon</div>
+  <div class="cal-day-head">Tue</div>
+  <div class="cal-day-head">Wed</div>
+  <div class="cal-day-head">Thu</div>
+  <div class="cal-day-head">Fri</div>
+  <div class="cal-day-head">Sat</div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day"><div class="num">1</div>
+  </div>
+  <div class="cal-day"><div class="num">2</div>
+  </div>
+  <div class="cal-day"><div class="num">3</div>
+  </div>
+  <div class="cal-day"><div class="num">4</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">5</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">6</div>
+  </div>
+  <div class="cal-day"><div class="num">7</div>
+  </div>
+  <div class="cal-day"><div class="num">8</div>
+  </div>
+  <div class="cal-day"><div class="num">9</div>
+    <a class="cal-pill" style="background:#991b1b;color:#fff;" href="https://gsa.acgov.org/do-business-with-us/contracting-opportunities/" target="_blank" title="[1] Housing Solutions for Health Vendor Pool (County of Alameda (Health Care Services Agency))">1 · Housing Solutions for He…</a>
+  </div>
+  <div class="cal-day"><div class="num">10</div>
+  </div>
+  <div class="cal-day"><div class="num">11</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">12</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">13</div>
+  </div>
+  <div class="cal-day"><div class="num">14</div>
+  </div>
+  <div class="cal-day"><div class="num">15</div>
+  </div>
+  <div class="cal-day"><div class="num">16</div>
+  </div>
+  <div class="cal-day"><div class="num">17</div>
+  </div>
+  <div class="cal-day"><div class="num">18</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">19</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">20</div>
+  </div>
+  <div class="cal-day"><div class="num">21</div>
+  </div>
+  <div class="cal-day"><div class="num">22</div>
+  </div>
+  <div class="cal-day"><div class="num">23</div>
+  </div>
+  <div class="cal-day"><div class="num">24</div>
+  </div>
+  <div class="cal-day"><div class="num">25</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">26</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">27</div>
+  </div>
+  <div class="cal-day"><div class="num">28</div>
+  </div>
+  <div class="cal-day"><div class="num">29</div>
+  </div>
+  <div class="cal-day"><div class="num">30</div>
+  </div>
+  <div class="cal-day"><div class="num">31</div>
+  </div>
+</div>
+</section>
+<section class="month-block">
+<h2>June 2027</h2>
+<div class="cal-grid">
+  <div class="cal-day-head">Sun</div>
+  <div class="cal-day-head">Mon</div>
+  <div class="cal-day-head">Tue</div>
+  <div class="cal-day-head">Wed</div>
+  <div class="cal-day-head">Thu</div>
+  <div class="cal-day-head">Fri</div>
+  <div class="cal-day-head">Sat</div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day"><div class="num">1</div>
+  </div>
+  <div class="cal-day"><div class="num">2</div>
+  </div>
+  <div class="cal-day"><div class="num">3</div>
+  </div>
+  <div class="cal-day"><div class="num">4</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">5</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">6</div>
+  </div>
+  <div class="cal-day"><div class="num">7</div>
+  </div>
+  <div class="cal-day"><div class="num">8</div>
+  </div>
+  <div class="cal-day"><div class="num">9</div>
+  </div>
+  <div class="cal-day"><div class="num">10</div>
+  </div>
+  <div class="cal-day"><div class="num">11</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">12</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">13</div>
+  </div>
+  <div class="cal-day"><div class="num">14</div>
+  </div>
+  <div class="cal-day"><div class="num">15</div>
+  </div>
+  <div class="cal-day"><div class="num">16</div>
+  </div>
+  <div class="cal-day"><div class="num">17</div>
+  </div>
+  <div class="cal-day"><div class="num">18</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">19</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">20</div>
+  </div>
+  <div class="cal-day"><div class="num">21</div>
+  </div>
+  <div class="cal-day"><div class="num">22</div>
+  </div>
+  <div class="cal-day"><div class="num">23</div>
+  </div>
+  <div class="cal-day"><div class="num">24</div>
+  </div>
+  <div class="cal-day"><div class="num">25</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">26</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">27</div>
+  </div>
+  <div class="cal-day"><div class="num">28</div>
+  </div>
+  <div class="cal-day"><div class="num">29</div>
+  </div>
+  <div class="cal-day"><div class="num">30</div>
+    <a class="cal-pill" style="background:#6b7280;color:#fff;" href="https://procurement.opengov.com/portal/tuolumnecountyca" target="_blank" title="[0] Quality Parenting and Caregiving Respite Services (Tuolumne County (Resource Family Home))">0 · Quality Parenting and Ca…</a>
+  </div>
+</div>
+</section>
+<section class="month-block">
+<h2>December 2027</h2>
+<div class="cal-grid">
+  <div class="cal-day-head">Sun</div>
+  <div class="cal-day-head">Mon</div>
+  <div class="cal-day-head">Tue</div>
+  <div class="cal-day-head">Wed</div>
+  <div class="cal-day-head">Thu</div>
+  <div class="cal-day-head">Fri</div>
+  <div class="cal-day-head">Sat</div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day empty"></div>
+  <div class="cal-day"><div class="num">1</div>
+  </div>
+  <div class="cal-day"><div class="num">2</div>
+  </div>
+  <div class="cal-day"><div class="num">3</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">4</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">5</div>
+  </div>
+  <div class="cal-day"><div class="num">6</div>
+  </div>
+  <div class="cal-day"><div class="num">7</div>
+  </div>
+  <div class="cal-day"><div class="num">8</div>
+  </div>
+  <div class="cal-day"><div class="num">9</div>
+  </div>
+  <div class="cal-day"><div class="num">10</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">11</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">12</div>
+  </div>
+  <div class="cal-day"><div class="num">13</div>
+  </div>
+  <div class="cal-day"><div class="num">14</div>
+  </div>
+  <div class="cal-day"><div class="num">15</div>
+  </div>
+  <div class="cal-day"><div class="num">16</div>
+  </div>
+  <div class="cal-day"><div class="num">17</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">18</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">19</div>
+  </div>
+  <div class="cal-day"><div class="num">20</div>
+  </div>
+  <div class="cal-day"><div class="num">21</div>
+  </div>
+  <div class="cal-day"><div class="num">22</div>
+  </div>
+  <div class="cal-day"><div class="num">23</div>
+  </div>
+  <div class="cal-day"><div class="num">24</div>
+  </div>
+  <div class="cal-day"><div class="num weekend">25</div>
+    <a class="cal-pill" style="background:#65a30d;color:#fff;" href="https://sfcitypartner.sfgov.org/pages/Events-BS3/event-search.aspx" target="_blank" title="[7] Emerging Technologies RFQ (San Francisco Department of Technology)">7 · Emerging Technologies RF…</a>
+  </div>
+  <div class="cal-day"><div class="num weekend">26</div>
+  </div>
+  <div class="cal-day"><div class="num">27</div>
+  </div>
+  <div class="cal-day"><div class="num">28</div>
+  </div>
+  <div class="cal-day"><div class="num">29</div>
+  </div>
+  <div class="cal-day"><div class="num">30</div>
+  </div>
+  <div class="cal-day"><div class="num">31</div>
+  </div>
+</div>
+</section>
+<section class="agenda">
+<h2>🔁 Always-on monitors (high-fit, no specific deadline)</h2>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">Ed Tech JPA — Monitor for new procurements (releases ~5 RFPs/year)</span><a class="item-link" href="https://edtechjpa.org/procurement/current-procurements" target="_blank">Open ↗</a><div class="item-agency">Ed Tech JPA</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">Fresno County Superintendent of Schools (FCSS) — Home market priority</span><a class="item-link" href="https://www.fcoe.org/" target="_blank">Open ↗</a><div class="item-agency">Fresno County Superintendent of Schools (FCSS)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">⚠️ ACTION: Register for FCSS CUPCCAC qualified-bidder list (November)</span><a class="item-link" href="https://fcoe.org/departments/facilities-and-operations/contractor-registration" target="_blank">Open ↗</a><div class="item-agency">Fresno County Superintendent of Schools (FCSS)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">FCSS CTEC + Regional Occupational Program + K12 Strong Workforce — Hero Academy CTE direct</span><a class="item-link" href="https://fcoe.org/departments" target="_blank">Open ↗</a><div class="item-agency">FCSS — CTEC + ROP + K12 Strong Workforce</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">FCSS All4Youth + Arts Education + STEM + Scout Island — full Enrichment catalog direct pit</span><a class="item-link" href="https://fcoe.org/departments" target="_blank">Open ↗</a><div class="item-agency">FCSS — All4Youth + Arts Education + STEM</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">FCSS Cradle to Career + Information Systems & Technology — Custom Dashboards direct pitch</span><a class="item-link" href="https://fcoe.org/departments" target="_blank">Open ↗</a><div class="item-agency">FCSS — Cradle to Career Fresno County + IS&T</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">10</span><span class="item-title">FCSS Curriculum & Instruction + Teacher Development — Resource Portal SaaS direct pitch</span><a class="item-link" href="https://fcoe.org/departments" target="_blank">Open ↗</a><div class="item-agency">FCSS — Curriculum and Instruction + Teacher Development</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Multilingual Wayfinding Kiosk Project</span><a class="item-link" href="https://ventura.courts.ca.gov/general-information/procurement" target="_blank">Open ↗</a><div class="item-agency">Superior Court of California, Ventura</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Orange County Department of Education (OCDE) — procurement monitor</span><a class="item-link" href="https://ocde.us/" target="_blank">Open ↗</a><div class="item-agency">Orange County Department of Education (OCDE)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">FCSS Community Schools Department — direct pitch target</span><a class="item-link" href="https://fcoe.org/departments" target="_blank">Open ↗</a><div class="item-agency">FCSS — Community Schools Department</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">KIPP SoCal Public Schools — Charter Management Org procurement monitor</span><a class="item-link" href="https://www.kippsocal.org/" target="_blank">Open ↗</a><div class="item-agency">KIPP SoCal Public Schools</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">KIPP NorCal Public Schools — Charter Management Org procurement monitor</span><a class="item-link" href="https://www.kippnorcal.org/" target="_blank">Open ↗</a><div class="item-agency">KIPP NorCal Public Schools</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Aspire Public Schools — Charter Management Org procurement monitor</span><a class="item-link" href="https://www.aspirepublicschools.org/" target="_blank">Open ↗</a><div class="item-agency">Aspire Public Schools</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Rocketship Public Schools — Charter Management Org procurement monitor</span><a class="item-link" href="https://www.rsed.org/" target="_blank">Open ↗</a><div class="item-agency">Rocketship Public Schools</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">First 5 California (state) — early childhood funder/commission monitor</span><a class="item-link" href="https://www.first5california.com/" target="_blank">Open ↗</a><div class="item-agency">First 5 California (state)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">California Endowment — major California foundation grant/RFP monitor</span><a class="item-link" href="https://www.calendow.org/" target="_blank">Open ↗</a><div class="item-agency">California Endowment</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#16a34a;color:#fff;">9</span><span class="item-title">Stuart Foundation — major California foundation grant/RFP monitor</span><a class="item-link" href="https://www.stuartfoundation.org/" target="_blank">Open ↗</a><div class="item-agency">Stuart Foundation</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Fresno USD — #3 CA district (69k students) procurement monitor</span><a class="item-link" href="https://www.fresnounified.org/departments/operational-services/purchasing/" target="_blank">Open ↗</a><div class="item-agency">Fresno Unified School District</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Clovis USD — #9 CA district (43k students) procurement monitor</span><a class="item-link" href="https://www.cusd.com/" target="_blank">Open ↗</a><div class="item-agency">Clovis Unified School District</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Capistrano USD — #11 CA district (41k students) monitor</span><a class="item-link" href="https://www.capousd.org/subsites/Purchasing/Doing-Business/ACTIVE-Procurements/index.html" target="_blank">Open ↗</a><div class="item-agency">Capistrano Unified School District</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Expanded Learning Program – Culinary Arts</span><a class="item-link" href="https://www.ggusd.us/departments/purchasing" target="_blank">Open ↗</a><div class="item-agency">Garden Grove Unified School District</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Los Angeles County Office of Education (LACOE) — procurement monitor</span><a class="item-link" href="https://vendors.planetbids.com/portal/61954/bo/bo-search" target="_blank">Open ↗</a><div class="item-agency">Los Angeles County Office of Education (LACOE)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">San Diego County Office of Education (SDCOE) — procurement monitor</span><a class="item-link" href="https://www.sdcoe.net/" target="_blank">Open ↗</a><div class="item-agency">San Diego County Office of Education (SDCOE)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Santa Clara County Office of Education (SCCOE) — procurement monitor</span><a class="item-link" href="https://www.sccoe.org/" target="_blank">Open ↗</a><div class="item-agency">Santa Clara County Office of Education (SCCOE)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Sacramento County Office of Education (SCOE) — procurement monitor</span><a class="item-link" href="https://www.scoe.net/" target="_blank">Open ↗</a><div class="item-agency">Sacramento County Office of Education (SCOE)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Riverside County Office of Education (RCOE) — procurement monitor</span><a class="item-link" href="https://www.rcoe.us/" target="_blank">Open ↗</a><div class="item-agency">Riverside County Office of Education (RCOE)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">San Bernardino County Superintendent of Schools (SBCSS) — procurement monitor</span><a class="item-link" href="https://www.sbcss.net/" target="_blank">Open ↗</a><div class="item-agency">San Bernardino County Superintendent of Schools (SBCSS)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Alameda County Office of Education (ACOE) — procurement monitor</span><a class="item-link" href="https://www.acoe.org/" target="_blank">Open ↗</a><div class="item-agency">Alameda County Office of Education (ACOE)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Kern County Superintendent of Schools (KCSOS) — procurement monitor</span><a class="item-link" href="https://kern.org/" target="_blank">Open ↗</a><div class="item-agency">Kern County Superintendent of Schools (KCSOS)</div></div></div></div>
+<div class="item"><div class="item-row"><div class="item-date">Monitor</div><div><span class="item-score" style="background:#65a30d;color:#fff;">8</span><span class="item-title">Contra Costa County Office of Education (CCCOE) — procurement monitor</span><a class="item-link" href="https://www.cccoe.k12.ca.us/" target="_blank">Open ↗</a><div class="item-agency">Contra Costa County Office of Education (CCCOE)</div></div></div></div>
+<p style="font-size:12px;color:#6b7684;margin-top:10px;">+ 420 more monitor entries on the dashboard.</p>
+</section>
+<footer>RFP Deadline Calendar · Compiled from public-sector procurement portals</footer>
+</div>
+</body>
+</html>
